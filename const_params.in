@@ -1,0 +1,154 @@
+###########################################
+#           UNITS SPECIFICS
+# PMFDM: GPa, mu.s, mu.m, K
+# PARADIS: Pa, s, burger@.ctrl, 1/Pa*s
+# MODEL: 
+# NOTE: 
+# PARADIS NEEDS 1) TO BE N2_FULL_FORCE MODE
+# 2) FIX EXTSTRESS UNINITIALIZED STRESS BUG
+###########################################
+
+###########################################
+#           MESO/MICRO
+# 0: micro,V=XTa,Lp=0,g==g0
+# 1: crystal plasticity, Puri11, Voce Law
+# 2: J2 plasticity, Roy06, Voce Law 
+# 3: DD plasticity
+###########################################
+
+mesoscale = 0
+NeyNorm = 0.2
+
+###########################################
+#           TEMPORAL SPECIFICS [mu s]
+###########################################
+
+dclock = 0.1
+duration = 1000
+tstep = 0
+clock = 0
+
+
+######################################################
+#           CUT BACK SPECIFICS [mu s]
+# if [ axv+lp > max_d_psr ] or 
+# if [ any solve() does not converge ]
+# time step shrinks by 1/beta
+# (e.g., dclock = 1--> dclock = 0.5 if beta = 0.5)
+# with ncpu > 2 a small error pops out due to mpi copy
+# this is a bug that needs to be fixed in next version 
+######################################################
+
+beta = 2
+max_d_psr = 0.002
+
+##########################################
+#           MATERIAL PARAMS    [GPa]
+##########################################
+
+matid = 1
+
+#lambda = 1.5
+#mu = 1
+
+YoungsM = 172.9494
+Poisson = 0.3327533
+#drag = 1e-4 (Gpa mus) corresponds to 10 (1/pa/s) in temp.ctrl
+drag = 1e-4
+
+#LL: hardening coefficient (GPa)
+#cc: recovery coefficient   (GPa)
+#mm: rate sensitivity  
+#Gm0: referene strain rate  (1/musec)
+#Gs: saturation stress     (GPa)
+#G0: yield stress          (GPa)
+#Theta0: stage II hardening rate   (GPa)
+#eta: 1/3. material property
+#K0: 
+#Burger: (mu.m)
+#Init temperature: (K)
+LL = 100
+cc = 100
+mm = 30
+Gm0 = 1
+Gs = 0.100
+G0 = 0.050
+Theta0 = 0.205
+ThetaDiffusion = 0.001
+ThetaWorkConvs = 0.9
+eta = 0.333
+K0 = 20
+Burger = 2.875401e-4
+Rho = 7.830
+T0 = 293
+DELTA = 0.2
+TK0 = 500
+
+
+
+######################################################################
+#            LOAD PARAMS  [dirichlet: milemeter per mu.s, neumann: GPa]
+######################################################################
+#           NUEMANN_ID = 7. 1 ==> 1+7.
+#            -x     +x    -y    +y    -z    +z   hole/slit  extra_load
+# dirichlet  1       2     3     4     5     6       7          8   
+# neumann    101   102   103   104   105   106     107        108
+# neumann free -- 100 to save computing time
+#             0     1    2      3     4    5       6    7  8   9   10
+######################################################################
+
+#enum sstype is defined in common.h
+
+#Simple Tensile
+#b_c_codes =  101   102   103   104    5     6    
+
+#Simple Shear
+b_c_codes =  1   2   3   4    5     6    
+sstype  = 3
+
+NeumannTargetLoad = 0.0
+NeumannLoadPeriod = 0.2
+
+#strain rate = 1e-5 if uniaxial [-z,z]=10, target = 1, loadperiod = 10000
+DirichletTargetLoad = 1
+DirichletLoadPeriod = 10
+
+#1 = dirichlet_plus_traction
+#2 = reaction_traction
+
+ShearLockSoluble = 1
+
+##########################################
+#         MESH SPECIFICS [microns]
+##########################################
+#1, hyper_rectangle (p1,p2)
+#2, hyper_cube(mesh_size)
+#3, subdivded_rectangle(repts, p1,p2)
+#4, hyper_cube_with_hole (repts[2], inner, outer, extrusion)
+#5, hyper_cube_slit(left, right)
+##########################################
+
+mesher = 3
+
+#1 1st Quadrant, #6
+Point1 =  5  5   5
+Point2 = -5 -5   0
+
+#2
+meshsize = 8
+
+#3
+repts = 15 15 2
+
+
+#4
+inner_radius = 1
+outer_radius = 8
+extrusion = 5
+
+#5
+left_lim = -12.5
+right_lim = 12.5
+ 
+#6
+layer_elm_sz = 0.5
